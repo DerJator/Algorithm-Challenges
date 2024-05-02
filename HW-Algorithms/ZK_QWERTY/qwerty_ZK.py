@@ -1,5 +1,6 @@
-def add_prefix(p: str, words: list[str]) -> list[str]:
+def add_prefix(p: str, words: list):  # str, list[str] -> list[str]
     return [p + el for el in words]
+
 
 class NameTree:
     def __init__(self):
@@ -21,9 +22,9 @@ class NameTree:
 
 
 class NameTreeNode:
-    def __init__(self, name: str | None,
-                 phone: int | None = None,
-                 is_root: bool = False):
+    def __init__(self, name: str,  # str|None
+                 phone: int = None,  # int|None
+                 is_root: bool = False):  # bool
         self.is_root = is_root
         self.children = []
         self.children_letters = {}
@@ -85,11 +86,11 @@ class NameTreeNode:
         poss = []
         next_letters = key_map.get(query[0])
 
-        for l in next_letters:
+        for l in next_letters:  # [O(3-4)]
             child = self.children_letters.get(l)
             if child is not None:
                 if len(query) > 1:
-                    poss.append( *add_prefix(l, child.filter_query(query[1:])) )
+                    poss.append( *add_prefix(l, child.filter_query(query[1:])) )  # Get word through tree [O(log
                 else:
                     leaf_child = child.children_letters.get("$")
                     if leaf_child is not None:
@@ -149,4 +150,5 @@ for case in range(int(input())):
         if no_match_flag:
             print("no entries found")
         print(n_suffix)
+    print()
 

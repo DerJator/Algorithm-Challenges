@@ -26,7 +26,7 @@ class NameTreeNode:
                  is_root: bool = False):
         self.is_root = is_root
         self.children = []
-        self.children_letters = []
+        self.children_letters = {}
         self.name = name
         self.phone = phone
 
@@ -34,30 +34,31 @@ class NameTreeNode:
         # TODO: Wenn neues Child, einmal durchiterieren, um Position (alphabetisch) zu finden, dort einfügen
         print(f"Add string: {name}, phone: {phone}")
         if name[0] != '$':
-            for child_ix, child_letter in enumerate(self.children_letters):
-                if child_letter == name[0]:
-                    print(f"Found letter {name[0]} in child {child_ix}, add {name[1:]} there")
-                    self.children[child_ix].add_name(name[1:], phone)
-                    return
+            next_child = self.children_letters.get(name[0])
+            if next_child is not None:
+                print(f"Found letter {name[0]} in a child, add {name[1:]} there")
+                next_child.add_name(name[1:], phone)
+                return
             print("Letter not found, create new child")
-            self.children.append(NameTreeNode(name=name[0]))
-            self.children_letters.append(name[0])
-            self.children[len(self.children) - 1].add_name(name[1:], phone)
+            # self.children.append(NameTreeNode(name=name[0]))
+            new_child = NameTreeNode(name=name[0])
+            self.children_letters[name[0]] = new_child
+            new_child.add_name(name[1:], phone)
 
         else:  # Assumes names are not doubled
             print("Last node reached, add $ node")
-            self.children.append(NameTreeNode("$", phone))
-            self.children_letters.append("$")
+            self.children_letters["$"] = NameTreeNode("$", phone)
+            # self.children_letters.append("$")
 
     def search_name(self, name: str) -> [bool, int]:
 
-        for child_ix, child_letter in enumerate(self.children_letters):
-            if child_letter == name[0]:
-                print(f"Found letter {name[0]} in child {child_ix}")
-                if name[1:] == '$':
-                    print(f"Yes, match found. Now count own suffixes in {self.children_letters}: {self.get_n_suffixes(True)}")
-                    return True, self.children[child_ix].get_n_suffixes(True)
-                return self.children[child_ix].search_name(name[1:])
+        child = self.children_letters.get(name[0])
+        if child is not None:
+            print(f"Found letter {name[0]} in child")
+            if name[1:] == '$':
+                print(f"Yes, match found. Now count own suffixes in {self.children_letters.keys()}: {self.get_n_suffixes(True)}")
+                return True, child.get_n_suffixes(True)
+            return child.search_name(name[1:])
 
         # n_suffixes = 0
         # for child in self.children:
@@ -68,11 +69,11 @@ class NameTreeNode:
     def get_n_suffixes(self, last_match: bool) -> int:
         n_suffixes = 0
         print(self.children_letters)
-        for child in self.children:
-            if not (child.name == "$" and last_match):
+        for c_letter, child in self.children_letters.items():
+            if not (c_letter == "$" and last_match):
                 n_suffixes += child.get_n_suffixes(False)
         print(n_suffixes, self.name)
-        print(len(self.children))
+        print(len(self.children_letters))
         if self.is_leaf():
             return 1
 
@@ -83,20 +84,20 @@ class NameTreeNode:
         next_letters = key_map.get(query[0])
 
         for l in next_letters:
-            for i, x in enumerate(self.children_letters):
-                if x == l and len(query) > 1:
-                    poss.append( *add_prefix(l, self.children[i].filter_query(query[1:])) )
-                    break
-                elif x == l:
-                    poss.append(l + str(self.children[i].phone))
+            child = self.children_letters.get(l)
+            if child is not None:
+                if len(query) > 1:
+                    poss.append( *add_prefix(l, child.filter_query(query[1:])) )
+                else:
+                    poss.append(l + " " + str(child.children_letters.get("$").phone))
 
         return poss
 
     def print_vals(self):
-        for child in self.children:
+        for child in self.children_letters.values():
             child.print_vals()
 
-        print(self.name)
+        print(self.name, self.phone)
 
     def is_leaf(self):
         return len(self.children) == 0

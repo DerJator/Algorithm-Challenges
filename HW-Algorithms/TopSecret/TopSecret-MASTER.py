@@ -1,5 +1,9 @@
 import sys
-import numpy as np
+
+
+class Identity:
+    def __init__(self):
+        self.value = True
 
 
 def mat_vec_mult(A, v):
@@ -9,6 +13,7 @@ def mat_vec_mult(A, v):
         result[i] = sum([A[i][j] * v[j] for j in range(len(A[0]))])
 
     return result
+
 
 def matrix_multiply(A, B):
     """ Multiply two matrices. """
@@ -29,36 +34,58 @@ def matrix_multiply(A, B):
     return result
 
 
+def triband_multiply(dim, coeffs, M):
+    new_M = [[0 for _ in range(dim)] for _ in range(dim)]
+    for i in range(dim):
+        for j in range(dim):
+            for k in range(0, 2+1):
+                new_M[i][j] += coeffs[k] * M[i - 1 + k, j]
+
+    return new_M
+
+
 def identity_matrix(size):
     """ Generate identity matrix of given size. """
     return [[1 if i == j else 0 for j in range(size)] for i in range(size)]
 
 
-def fast_exp(A, n: int, thresh: int):
+def fast_exp(A, n: int, thresh: int, strip: bool = False):
     """ Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh. """
+    # print(f"{n=}, {strip=}")
     if n == 0:
-        return identity_matrix(len(A))
+        return Identity()
 
-    res = fast_exp(A, n // 2, thresh)
-    res = [[elem % (10 ** thresh) for elem in row] for row in res]  # Only take thresh last digits to avoid huge numbers
-    R = matrix_multiply(res, res)
+    res = fast_exp(A, n // 2, thresh, not strip)
 
-    if n % 2 == 1:
-        R = matrix_multiply(R, A)
+    if type(res) is not Identity:
+        # print("No Identity")
+        R = matrix_multiply(res, res)
+    else:
+        # print("Identity returned")
+        R = A
+
+    if n % 2 == 1 and n != 1:
+       R = matrix_multiply(R, A)
+
+    if strip:  # Only take thresh last digits to avoid huge numbers
+        R = [[elem % 10 ** thresh for elem in row] for row in R]
+
+    print(f"{n=} {max(R)=}")
 
     return R
 
-def parse_txt(input: str):
-    lines = input.split('\n')
-    no_samples = eval(lines.pop(0))
+
+def parse_txt():
+    no_samples = int(input())
     params = []
     numbers = []
 
-    for _ in range(no_samples):
-        param_values = [int(s) for s in lines.pop(0).split(" ")]
+    for i in range(no_samples):
+        param_values = [int(s) for s in input().split(" ")]
         params.append(param_values)
-        n_vals = [int(s) for s in lines.pop(0).split(" ")]
-        _ = lines.pop(0)  # Pop the empty line
+        n_vals = [int(s) for s in input().split(" ")]
+        if i < no_samples - 1:
+            _ = input()  # Pop the empty line
 
         numbers.append(n_vals)
 
@@ -66,9 +93,10 @@ def parse_txt(input: str):
 
 
 if __name__ == '__main__':
-    #input_string = sys.argv[1]
-    with open("1.in", "r") as f:
-        no_samples, params, vals = parse_txt(f.read())
+    # input_string = sys.argv[0]
+    # with open("./1.in", "r") as f:
+        # no_samples, params, vals = parse_txt(f.read())
+    no_samples, params, vals = parse_txt()
 
     for j in range(no_samples):
         N, S, L, R, X = params[j]
@@ -77,7 +105,8 @@ if __name__ == '__main__':
         # print(f"{N_in=}")
 
         """ Build matrix """
-        a_mat = [[0] * N for _ in range(N)]
+        a_mat = [[0] * N for _ in range(N)]  # Unnecessary, only redundancy
+        matrix_coeffs = [L, 1, R]
 
         # First row
         a_mat[0][N - 1] = L
@@ -96,9 +125,9 @@ if __name__ == '__main__':
         a_mat[N - 1][0] = R
 
         run_N = N_in[:]
-        run_N = matrix_multiply(fast_exp(a_mat, S, X), run_N)
+        A_n = fast_exp(a_mat, S, thresh=X, strip=True)
+        if type(A_n) is not Identity:
+            run_N = matrix_multiply(A_n, run_N)
 
-        with open("1.ans", "a") as file:
-            file.write(' '.join(map(str, [elem % (10 ** X) for elem in run_N])))
-            if not j == no_samples - 1:
-                file.write("\n")
+        [print(f"{elem % (10 ** X)} ", end="") for elem in run_N]
+        print()

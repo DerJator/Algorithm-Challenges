@@ -70,8 +70,6 @@ def fast_exp(A, n: int, thresh: int, strip: bool = False):
     if strip:  # Only take thresh last digits to avoid huge numbers
         R = [[elem % 10 ** thresh for elem in row] for row in R]
 
-    print(f"{n=} {max(R)=}")
-
     return R
 
 

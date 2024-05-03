@@ -38,6 +38,9 @@ if __name__ == '__main__':
             mismatch_flag = False
 
             # Search for the reference string
+            if len(line) > len(reference_str):
+                continue
+
             for c in line:
                 if c != ' ':
                     ctr += 1
@@ -57,16 +60,18 @@ if __name__ == '__main__':
                 break
 
         if ref_line == -1:
-            print("No solution.\n")
+            print("No solution.")
+            print("")
             continue
 
         """ Decryption Party """
         # Decrypt all lines
 
         no_solution = False
+        solutions = []
         for l3, line in enumerate(lines):
             if l3 == ref_line:
-                print(reference_str)
+                solutions.append(reference_str)
                 continue
             decryption = ['x'] * len(line)
             for ix, char in enumerate(line):
@@ -74,10 +79,16 @@ if __name__ == '__main__':
                     decryption[ix] = ref_dict[char]
                 except KeyError:
                     no_solution = True
-                    print("No solution.")
+                    # print("No solution.")
                     break
 
-            if not no_solution:
-                print("".join(decryption))
+            if no_solution:
+                print("No solution.")
+                break
+            else:
+                solutions.append("".join(decryption))
+
+        if not no_solution:
+            print("\n".join(solutions))
 
         print()

@@ -8,6 +8,8 @@ def shift_lowercase_ascii(text, n):
 if __name__ == '__main__':
     reference_mask = [3, 5, 5, 3, 5, 4, 3, 4, 3]  # word lengths, implicit space in between
     reference_str = "the quick brown fox jumps over the lazy dog"
+    # Duplicates and positions in reference string:
+    duplicates = {'e': [2, 28, 33], 'h': [1, 32], 'o': [12, 17, 26, 41], 'r': [11, 29], 't': [0, 31], 'u': [5, 21]}
 
     eof_flag = False
     n_cases = int(input())
@@ -53,9 +55,24 @@ if __name__ == '__main__':
                     ref_ix += 1
 
             # First matching line: Build up letter mapping
+            # Watch out for consistent mapping
             if not mismatch_flag:
                 ref_line = l2
                 for i, c in enumerate(line):
+                    #print(f"{c}->{reference_str[i]}")
+                    if c in ref_dict.keys():
+                        if not c == ' ':
+                            #print(f"Duplicate letter: {c}")
+                            try:
+                                #print(f"'{reference_str[i]}'")
+                                #print(f"{duplicates[reference_str[i]]}")
+                                #print(f"{i=}")
+                                if i not in duplicates[reference_str[i]][1:]:
+                                    ref_line = -1
+                                    break
+                            except KeyError:
+                                ref_line = -1
+                                break
                     ref_dict[c] = reference_str[i]
                 break
 

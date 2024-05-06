@@ -7,6 +7,7 @@ def shift_lowercase_ascii(text, n):
 
 if __name__ == '__main__':
     reference_mask = [3, 5, 5, 3, 5, 4, 3, 4, 3]  # word lengths, implicit space in between
+    space_pos = [3, 9, 15, 19, 25, 30, 34, 39, 43]
     reference_str = "the quick brown fox jumps over the lazy dog"
     # Duplicates and positions in reference string:
     duplicates = {'e': [2, 28, 33], 'h': [1, 32], 'o': [12, 17, 26, 41], 'r': [11, 29], 't': [0, 31], 'u': [5, 21]}
@@ -17,8 +18,6 @@ if __name__ == '__main__':
     for testcase in range(n_cases):
         if eof_flag:
             break
-
-        ref_dict = {' ': ' '}
 
         """ Read in all lines """
         lines = []
@@ -32,49 +31,65 @@ if __name__ == '__main__':
 
             lines.append(line)  # Save for decryption
 
-        """" Find reference string """
+        """" Find possible reference string """
         ref_line = -1
+
         for l2, line in enumerate(lines):
             ctr = 0
             ref_ix = 0
             mismatch_flag = False
 
             # Search for the reference string
-            if len(line) > len(reference_str):
+            if len(line) != len(reference_str):
                 continue
 
-            for c in line:
-                if c != ' ':
-                    ctr += 1
-                else:
-                    if reference_mask[ref_ix] != ctr:
+            space_ctr = 0
+            for c_ix, c in enumerate(line):
+                if c_ix == space_pos[space_ctr]:
+                    if c != ' ':
                         mismatch_flag = True
-                    ctr = 0
-                    if mismatch_flag:
                         break
-                    ref_ix += 1
+                    else:
+                        space_ctr += 1
+                elif c_ix != space_pos[space_ctr] and c == ' ':
+                    mismatch_flag = True
+                    break
 
             # First matching line: Build up letter mapping
             # Watch out for consistent mapping
             if not mismatch_flag:
+                ref_dict = {' ': ' '}
                 ref_line = l2
-                for i, c in enumerate(line):
-                    #print(f"{c}->{reference_str[i]}")
+                space_ctr = 0
+                # print(f"Reference string could be in line {ref_line}")
+                for c_ix, c in enumerate(line):
+                    # print(f"{c}->{reference_str[i]}")
+                    # Check if the character has already been mapped, if so check if the duplicate is at an allowed
+                    # position (duplicates in the reference string)
                     if c in ref_dict.keys():
                         if not c == ' ':
-                            #print(f"Duplicate letter: {c}")
+                            # print(f"Duplicate letter: {c}")
                             try:
-                                #print(f"'{reference_str[i]}'")
-                                #print(f"{duplicates[reference_str[i]]}")
-                                #print(f"{i=}")
-                                if i not in duplicates[reference_str[i]][1:]:
+                                # print(f"'{reference_str[i]}'")
+                                # print(f"{duplicates[reference_str[i]]}")
+                                # print(f"{i=}")
+                                # Check if the position of the reference string allows a duplicate
+                                if c_ix not in duplicates[reference_str[c_ix]][1:]:
                                     ref_line = -1
                                     break
                             except KeyError:
                                 ref_line = -1
                                 break
-                    ref_dict[c] = reference_str[i]
-                break
+
+                    if c == ' ':
+                        pass
+                    ref_dict[c] = reference_str[c_ix]
+                if ref_line != -1:  # String matched reference string!
+                    # print(f"Reference string match in {ref_line}")
+                    break
+                elif l2 == len(lines) - 1:  # Last possibility, so no solution, else continue finding reference string
+                    # print("No solution because last string didn't match")
+                    ref_line = -1
 
         if ref_line == -1:
             print("No solution.")

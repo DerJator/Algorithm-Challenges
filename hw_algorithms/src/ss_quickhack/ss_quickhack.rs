@@ -1,5 +1,4 @@
 use std::io;
-use rand::Rng;
 
 pub fn ansic_rand(a_0: i32, n_iter: usize, simple: bool) -> Vec<i32> {
     let mut rand_nums: Vec<i32> = Vec::with_capacity(n_iter);
@@ -21,7 +20,7 @@ pub fn ansic_rand(a_0: i32, n_iter: usize, simple: bool) -> Vec<i32> {
 
 pub fn partition(arr: &mut [i32]) -> usize {
     // Pick a random pivot for better average runtime and put it in the last place
-    let pivot_ix= rand::thread_rng().gen_range(0..arr.len());
+    let pivot_ix = ansic_rand(arr[0], 1, false)[0] as usize % arr.len();
     arr.swap(pivot_ix, arr.len() - 1);
     let pivot_ix = arr.len() - 1;
 

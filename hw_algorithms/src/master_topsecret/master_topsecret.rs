@@ -24,7 +24,7 @@ fn build_mult_mat(n: usize, l: u64, r: u64) -> Vec<Vec<u64>> {
     return matrix;
 }
 
-fn mat_vec_mult(a_mat: &Vec<Vec<u64>>, v: &Vec<u64>, thresh: u64) -> Vec<u64> {
+fn mat_vec_mult(a_mat: &Vec<Vec<u64>>, v: &Vec<u64>, mod_op: u64) -> Vec<u64> {
     let mut result: Vec<u64> = vec![0;a_mat.len()];
 
     for i in 0..a_mat.len() {
@@ -32,13 +32,13 @@ fn mat_vec_mult(a_mat: &Vec<Vec<u64>>, v: &Vec<u64>, thresh: u64) -> Vec<u64> {
         for j in 0..a_mat[0].len() {
             run_sum += a_mat[i][j] * v[j];
         }
-        result[i] = run_sum % pow(10, thresh);
+        result[i] = run_sum % mod_op;
     }
 
     return result;
 }
 
-fn matrix_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, thresh: u64) -> Vec<Vec<u64>>{
+fn matrix_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec<u64>>{
     let m = A.len();
     let n1 = A[0].len();
     let n2 = B[0].len();
@@ -47,7 +47,7 @@ fn matrix_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, thresh: u64) -> Vec<Vec
     for i in 0..m {
         for j in 0..n2 {
             for k in 0..n1 {
-                result[i][j] += (A[i][k] * B[k][j]) % pow(10, thresh);
+                result[i][j] += (A[i][k] * B[k][j]) % mod_op;
             }
         }
     }
@@ -105,9 +105,11 @@ pub fn main() {
         let matrix = build_mult_mat(params[0] as usize, params[2], params[3]);
         if params[1] <= u64::MAX {
             let A_n;
+            let modulo_op = pow(10, params[4]);
+
             if params[1] > 1 {
                 // S>1: Do algorithm
-                A_n = fast_exp(&matrix, params[1], params[0] as usize, params[4], true);
+                A_n = fast_exp(&matrix, params[1], params[0] as usize, modulo_op, true);
             } else if params[1] == 1 {
                 // S=1: return start matrix
                 A_n = None;  // match below handles None as if
@@ -126,7 +128,7 @@ pub fn main() {
                 None => { algo_res = matrix },
             }
 
-            let final_res = mat_vec_mult(&algo_res, &values, params[4]);
+            let final_res = mat_vec_mult(&algo_res, &values, modulo_op);
             for el in final_res.iter() {
                 print!("{} ", el);
             }

@@ -1,5 +1,6 @@
 use std::io;
 use std::io::{Lines, StdinLock};
+use std::num::Wrapping;
 
 fn pow(base: u64, exp: u64) -> u64 {
     if exp == 0 {
@@ -36,8 +37,9 @@ fn build_identity_mat(mat: &mut Vec<Vec<u64>>, size: usize) {
 fn mat_vec_mult(a_mat: &Vec<Vec<u64>>, v: &Vec<u64>, mod_op: u64) -> Vec<u64> {
     let mut result: Vec<u64> = vec![0;a_mat.len()];
 
+    let mut run_sum = 0;
     for i in 0..a_mat.len() {
-        let mut run_sum = 0;
+        run_sum = 0;
         for j in 0..a_mat[0].len() {
             run_sum += a_mat[i][j] * v[j];
         }
@@ -64,6 +66,23 @@ fn matrix_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec
     return result;
 }
 
+fn banded_multiply(band: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec<u64>> {
+    let m = band.len();
+    let n1 = band[0].len();
+    let n2 = B[0].len();
+    let mut result = vec![vec![0; n2]; m];
+
+    for i in 0..m {
+        for j in 0..n2 {
+            for k in [((i as i32-1+n1 as i32) % n1 as i32) as usize, i, (i+1+n1) % n1] {
+                result[i][j] = (result[i][j] + band[i][k] * B[k][j]) % mod_op;
+            }
+        }
+    }
+
+    return result;
+}
+
 fn fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
     // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
     if n == 0 {
@@ -76,7 +95,7 @@ fn fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize
     if n % 2 == 0 {
         *A = matrix_multiply(A, A, thresh);
     } else {
-        *A = matrix_multiply(ref_mat, &matrix_multiply(A, A, thresh), thresh);
+        *A = banded_multiply(ref_mat, &matrix_multiply(A, A, thresh), thresh);
     }
 }
 
@@ -128,16 +147,16 @@ pub fn main() {
 
         // params: N, S, L, R, X
         //         0, 1, 2, 3, 4
-        let mut matrix = build_mult_mat(params[0] as usize, params[2], params[3]);
-        let mut A_n= matrix.clone();
+        let ref_matrix = build_mult_mat(params[0] as usize, params[2], params[3]);
+        let mut A_n= ref_matrix.clone();
         let modulo_op = pow(10, params[4]);
 
         if params[1] > 1 {
             // S>1: Do algorithm
-            fast_exp2(&mut A_n, &matrix, params[1], params[0] as usize, modulo_op, true);
+            fast_exp2(&mut A_n, &ref_matrix, params[1], params[0] as usize, modulo_op, true);
         } else if params[1] == 1 {
             // S=1: return start matrix
-            A_n = matrix;
+            A_n = ref_matrix;
         } else {
             // S=0: return Identity
             build_identity_mat(&mut A_n, params[0] as usize);

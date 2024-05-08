@@ -63,21 +63,29 @@ if __name__ == '__main__':
                 space_ctr = 0
                 # print(f"Reference string could be in line {ref_line}")
                 for c_ix, c in enumerate(line):
-                    # print(f"{c}->{reference_str[i]}")
+                    # print(f"{c}->{reference_str[c_ix]}")
                     # Check if the character has already been mapped, if so check if the duplicate is at an allowed
                     # position (duplicates in the reference string)
                     if c in ref_dict.keys():
                         if not c == ' ':
                             # print(f"Duplicate letter: {c}")
                             try:
-                                # print(f"'{reference_str[i]}'")
-                                # print(f"{duplicates[reference_str[i]]}")
-                                # print(f"{i=}")
+                                # print(f"'{reference_str[c_ix]}'")
+                                # print(f"{duplicates[reference_str[c_ix]]}")
+                                # print(f"{c_ix=}")
+
                                 # Check if the position of the reference string allows a duplicate
                                 if c_ix not in duplicates[reference_str[c_ix]][1:]:
                                     ref_line = -1
                                     break
+
+                                if ref_dict[c] != reference_str[c_ix]:
+                                    # print("Allowed Duplicate, but ambiguous mapping")
+                                    ref_line = -1
+                                    break
+
                             except KeyError:
+                                # print("KeyError")
                                 ref_line = -1
                                 break
 

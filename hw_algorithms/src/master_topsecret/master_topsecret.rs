@@ -1,7 +1,16 @@
 use std::io;
 use std::io::{Lines, StdinLock};
-use num_traits::pow;
 
+fn pow(base: u64, exp: u64) -> u64 {
+    if exp == 0 {
+        return 1;
+    }
+    let mut result = base;
+    for _ in 1..exp {
+        result *= base;
+    }
+    result
+}
 
 fn build_mult_mat(n: usize, l: u64, r: u64) -> Vec<Vec<u64>> {
     let mut matrix: Vec<Vec<u64>> = vec![vec![0;n];n];
@@ -22,7 +31,7 @@ fn mat_vec_mult(a_mat: &Vec<Vec<u64>>, v: &Vec<u64>, thresh: u64) -> Vec<u64> {
         for j in 0..a_mat[0].len() {
             run_sum += a_mat[i][j] * v[j];
         }
-        result[i] = run_sum % (pow::<u64>(10, thresh as usize));
+        result[i] = run_sum % pow(10, thresh);
     }
 
     return result;
@@ -37,7 +46,7 @@ fn matrix_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, thresh: u64) -> Vec<Vec
     for i in 0..m {
         for j in 0..n2 {
             for k in 0..n1 {
-                result[i][j] += (A[i][k] * B[k][j]) % (pow::<u64>(10, thresh as usize));
+                result[i][j] += (A[i][k] * B[k][j]) % pow(10, thresh);
             }
         }
     }

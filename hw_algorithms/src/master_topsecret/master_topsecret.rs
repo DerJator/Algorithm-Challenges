@@ -5,11 +5,12 @@ fn pow(base: u64, exp: u64) -> u64 {
     if exp == 0 {
         return 1;
     }
-    let mut result = base;
-    for _ in 1..exp {
-        result *= base;
+    let res = pow(base, exp/2);
+    if exp % 2 == 0 {
+        return res * res;
+    } else {
+        return base * res * res;
     }
-    result
 }
 
 fn build_mult_mat(n: usize, l: u64, r: u64) -> Vec<Vec<u64>> {

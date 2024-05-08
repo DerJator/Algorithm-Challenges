@@ -24,6 +24,15 @@ fn build_mult_mat(n: usize, l: u64, r: u64) -> Vec<Vec<u64>> {
     return matrix;
 }
 
+fn build_identity_mat(mat: &mut Vec<Vec<u64>>, size: usize) {
+    // mat = vec![vec![0 as u64; size]; size];
+    for i in 0..size {
+        for j in 0.. size {
+            mat[i][j] = (i == j) as u64;
+        }
+    }
+}
+
 fn mat_vec_mult(a_mat: &Vec<Vec<u64>>, v: &Vec<u64>, mod_op: u64) -> Vec<u64> {
     let mut result: Vec<u64> = vec![0;a_mat.len()];
 
@@ -54,6 +63,23 @@ fn matrix_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec
 
     return result;
 }
+
+fn fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
+    // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
+    if n == 0 {
+        build_identity_mat(A, size);
+        return;
+    }
+
+    fast_exp2(A, ref_mat, n / 2, size, thresh, !strip);
+
+    if n % 2 == 0 {
+        *A = matrix_multiply(A, A, thresh);
+    } else {
+        *A = matrix_multiply(ref_mat, &matrix_multiply(A, A, thresh), thresh);
+    }
+}
+
 
 fn fast_exp(A: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) -> Option<Vec<Vec<u64>>> {
     // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
@@ -102,42 +128,38 @@ pub fn main() {
 
         // params: N, S, L, R, X
         //         0, 1, 2, 3, 4
-        let matrix = build_mult_mat(params[0] as usize, params[2], params[3]);
-        if params[1] <= u64::MAX {
-            let A_n;
-            let modulo_op = pow(10, params[4]);
+        let mut matrix = build_mult_mat(params[0] as usize, params[2], params[3]);
+        let mut A_n= matrix.clone();
+        let modulo_op = pow(10, params[4]);
 
-            if params[1] > 1 {
-                // S>1: Do algorithm
-                A_n = fast_exp(&matrix, params[1], params[0] as usize, modulo_op, true);
-            } else if params[1] == 1 {
-                // S=1: return start matrix
-                A_n = None;  // match below handles None as if
-            } else {
-                // S=0: return Identity
-                let mut intermediate: Vec<Vec<u64>> = vec![vec![0 ;params[0] as usize]; params[0] as usize];
-                for i in 0..params[0] as usize {
-                    intermediate[i][i] = 1;
-                }
-                A_n = Some(intermediate);
-            }
+        if params[1] > 1 {
+            // S>1: Do algorithm
+            fast_exp2(&mut A_n, &matrix, params[1], params[0] as usize, modulo_op, true);
+        } else if params[1] == 1 {
+            // S=1: return start matrix
+            A_n = matrix;
+        } else {
+            // S=0: return Identity
+            build_identity_mat(&mut A_n, params[0] as usize);
+        }
 
-            let algo_res: Vec<Vec<u64>>;
-            match A_n {
-                Some(last) => { algo_res = last },
-                None => { algo_res = matrix },
-            }
+        /*
+        let algo_res: Vec<Vec<u64>>;
+        match A_n {
+            Some(last) => { algo_res = last },
+            None => { algo_res = matrix },
+        }
+        */
 
-            let final_res = mat_vec_mult(&algo_res, &values, modulo_op);
-            for el in final_res.iter() {
-                print!("{} ", el);
-            }
-            println!();
+        let final_res = mat_vec_mult(&A_n, &values, modulo_op);
+        for el in final_res.iter() {
+            print!("{} ", el);
+        }
+        println!();
 
-            match line_iter.next() {
-                Some(_) => {}
-                None => break
-            }
+        match line_iter.next() {
+            Some(_) => {}
+            None => break
         }
     }
 

@@ -76,6 +76,7 @@ if __name__ == '__main__':
 
                                 # Check if the position of the reference string allows a duplicate
                                 if c_ix not in duplicates[reference_str[c_ix]][1:]:
+                                    # print("Disallowed Duplicate")
                                     ref_line = -1
                                     break
 
@@ -85,13 +86,27 @@ if __name__ == '__main__':
                                     break
 
                             except KeyError:
-                                # print("KeyError")
+                                # print("KeyError, probably not an allowed duplicate in ref_str")
                                 ref_line = -1
                                 break
 
                     if c == ' ':
-                        pass
-                    ref_dict[c] = reference_str[c_ix]
+                        continue
+
+                    if reference_str[c_ix] != ' ':
+
+                        if not reference_str[c_ix] in ref_dict.values():
+                            # print(f"{reference_str[c_ix]=} in {ref_dict.values()}")
+                            ref_dict[c] = reference_str[c_ix]
+                        elif c_ix in duplicates[reference_str[c_ix]]:
+                            # print(f"{c_ix=} {reference_str[c_ix]=} {duplicates.get(reference_str[c_ix])}")
+                            ref_dict[c] = reference_str[c_ix]
+                        else:
+                            ref_line = -1
+
+                    else:
+                        # print("Uh OH")
+                        ref_line = -1
                 if ref_line != -1:  # String matched reference string!
                     # print(f"Reference string match in {ref_line}")
                     break

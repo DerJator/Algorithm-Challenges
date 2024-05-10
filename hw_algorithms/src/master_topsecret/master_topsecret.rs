@@ -113,6 +113,8 @@ fn circular_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<V
 
 fn fast_exp3(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
     // Recursively multiply circular matrix A until exponent n is reached. Keep numbers lower than 10^thresh
+    // Runtime: log(s) * n^2
+
     if n == 0 {
         build_identity_mat(A, size);
         return;
@@ -132,6 +134,8 @@ fn fast_exp3(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize
 
 fn fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
     // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
+    // Runtime: 3 * s * n^2
+
     if n == 0 {
         build_identity_mat(A, size);
         return;
@@ -149,6 +153,8 @@ fn fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize
 
 fn fast_exp(A: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) -> Option<Vec<Vec<u64>>> {
     // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
+    // Runtime: log(s) * n^3
+
     if n == 0 {
         return None;
     }

@@ -58,10 +58,8 @@ def fast_exp(A, n: int, thresh: int, strip: bool = False):
     res = fast_exp(A, n // 2, thresh, not strip)
 
     if type(res) is not Identity:
-        # print("No Identity")
         R = matrix_multiply(res, res)
     else:
-        # print("Identity returned")
         R = A
 
     if n % 2 == 1 and n != 1:

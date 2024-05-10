@@ -94,7 +94,7 @@ fn circular_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<V
 
     for k in 0..cols_b {
         for j in 0..cols_a {
-            first_row[k] += A[0][j] * B[j][k] % mod_op;
+            first_row[k] += (A[0][j] * B[j][k]) % mod_op;
         }
     }
 
@@ -105,7 +105,6 @@ fn circular_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<V
             res[i][j] = first_row[shifted_ix];
         }
     }
-
 
     return res;
 }
@@ -121,58 +120,14 @@ fn fast_exp3(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize
     }
 
     fast_exp3(A, ref_mat, n / 2, size, thresh, !strip);
-    let mut test = vec![vec![0;size]; size];
 
     if n % 2 == 0 {
         *A = circular_multiply(A, A, thresh);
     } else {
-        *A = banded_multiply(ref_mat, &circular_multiply(A, A, thresh), thresh);
+        *A = circular_multiply(ref_mat, &circular_multiply(A, A, thresh), thresh);
     }
 }
 
-
-
-fn fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
-    // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
-    // Runtime: 3 * s * n^2
-
-    if n == 0 {
-        build_identity_mat(A, size);
-        return;
-    }
-
-    fast_exp2(A, ref_mat, n / 2, size, thresh, !strip);
-
-    if n % 2 == 0 {
-        *A = matrix_multiply(A, A, thresh);
-    } else {
-        *A = banded_multiply(ref_mat, &matrix_multiply(A, A, thresh), thresh);
-    }
-}
-
-
-fn fast_exp(A: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) -> Option<Vec<Vec<u64>>> {
-    // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
-    // Runtime: log(s) * n^3
-
-    if n == 0 {
-        return None;
-    }
-
-    let res = fast_exp(A, n / 2, size, thresh, !strip);
-    let mut R: Vec<Vec<u64>>;
-
-    match res {
-        Some(a_mat) => {R = matrix_multiply(&a_mat, &a_mat, thresh)},
-        None => {R = A.clone()},
-    }
-
-    if n % 2 == 1 && n != 1 {
-        R = matrix_multiply(&R, &A, thresh);
-    }
-
-    return Some(R);
-}
 
 fn next_line(iter: &mut Lines<StdinLock>) -> Vec<u64> {
     iter
@@ -185,6 +140,7 @@ fn next_line(iter: &mut Lines<StdinLock>) -> Vec<u64> {
         .filter_map(Result::ok)
         .collect()
 }
+
 
 pub fn main() {
     let stdin = io::stdin();
@@ -232,6 +188,49 @@ pub fn main() {
             Some(_) => {}
             None => break
         }
+    }
+
+
+    fn fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
+        // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
+        // Runtime: 3 * s * n^2
+
+        if n == 0 {
+            build_identity_mat(A, size);
+            return;
+        }
+
+        fast_exp2(A, ref_mat, n / 2, size, thresh, !strip);
+
+        if n % 2 == 0 {
+            *A = matrix_multiply(A, A, thresh);
+        } else {
+            *A = banded_multiply(ref_mat, &matrix_multiply(A, A, thresh), thresh);
+        }
+    }
+
+
+    fn fast_exp(A: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) -> Option<Vec<Vec<u64>>> {
+        // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
+        // Runtime: log(s) * n^3
+
+        if n == 0 {
+            return None;
+        }
+
+        let res = fast_exp(A, n / 2, size, thresh, !strip);
+        let mut R: Vec<Vec<u64>>;
+
+        match res {
+            Some(a_mat) => {R = matrix_multiply(&a_mat, &a_mat, thresh)},
+            None => {R = A.clone()},
+        }
+
+        if n % 2 == 1 && n != 1 {
+            R = matrix_multiply(&R, &A, thresh);
+        }
+
+        return Some(R);
     }
 
 }

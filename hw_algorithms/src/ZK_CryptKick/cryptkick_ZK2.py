@@ -7,9 +7,6 @@ duplicates = {'e': [2, 28, 33], 'h': [1, 32], 'o': [12, 17, 26, 41], 'r': [11, 2
 duplicates_by_pos = {0: [31], 1: [32], 2: [28, 33], 5: [21], 11: [29], 12: [17, 26, 41]}  # for the first letter occurence
 
 def is_bijective_mapping(string):
-    if len(reference_str) != len(string):
-        return False
-
     mapping = {}
     mapped_letters = set()
 
@@ -106,24 +103,25 @@ if __name__ == '__main__':
 
         # Search every line for the permutated reference string
         for l, line in enumerate(lines):
+            if len(reference_str) != len(line):
+                # print("Length doesn't match")
+                continue
             if not match_ref_shape(line):
-                print("Shape does not match reference")
+                # print("Shape does not match reference")
                 continue
             if not is_bijective_mapping(line):
-                print("No bijective mapping")
+                # print("No bijective mapping")
                 continue
             if not check_duplicates(line):
-                print("Duplicate at wrong position")
+                # print("Duplicate at wrong position")
                 continue
 
             ref_match_found = l
             break
 
         if ref_match_found == -1:
-            print("No solution.")
+            print("No solution.\n")
             continue
-        else:
-            print("Solution: ", ref_match_found)
 
         # Build mapping
         mapping = build_mapping(lines[ref_match_found])
@@ -133,5 +131,5 @@ if __name__ == '__main__':
             decryption = apply_mapping(line, mapping)
             print(decryption)
 
-
+        print("")
 

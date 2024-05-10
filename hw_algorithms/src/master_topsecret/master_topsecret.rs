@@ -1,6 +1,5 @@
 use std::io;
 use std::io::{Lines, StdinLock};
-use std::num::Wrapping;
 
 fn pow(base: u64, exp: u64) -> u64 {
     if exp == 0 {
@@ -83,6 +82,54 @@ fn banded_multiply(band: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<
     return result;
 }
 
+fn circular_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec<u64>> {
+    // Calculate first row explicitly, the rest is shifted because A and B are circular
+
+    let rows_a = A.len();
+    let cols_a = A[0].len();
+    let cols_b = B[0].len();
+    let mut res: Vec<Vec<u64>> = vec![vec![0; cols_b]; rows_a];
+
+    let mut first_row = vec![0; cols_a];
+
+    for k in 0..cols_b {
+        for j in 0..cols_a {
+            first_row[k] += A[0][j] * B[j][k] % mod_op;
+        }
+    }
+
+    let mut shifted_ix: usize;
+    for i in 0..rows_a {
+        for j in 0..cols_b {
+            shifted_ix = ((j as i32 - i as i32 + cols_b as i32) % cols_b as i32) as usize;
+            res[i][j] = first_row[shifted_ix];
+        }
+    }
+
+
+    return res;
+}
+
+
+fn fast_exp3(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
+    // Recursively multiply circular matrix A until exponent n is reached. Keep numbers lower than 10^thresh
+    if n == 0 {
+        build_identity_mat(A, size);
+        return;
+    }
+
+    fast_exp3(A, ref_mat, n / 2, size, thresh, !strip);
+    let mut test = vec![vec![0;size]; size];
+
+    if n % 2 == 0 {
+        *A = circular_multiply(A, A, thresh);
+    } else {
+        *A = banded_multiply(ref_mat, &circular_multiply(A, A, thresh), thresh);
+    }
+}
+
+
+
 fn fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
     // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
     if n == 0 {
@@ -153,7 +200,7 @@ pub fn main() {
 
         if params[1] > 1 {
             // S>1: Do algorithm
-            fast_exp2(&mut A_n, &ref_matrix, params[1], params[0] as usize, modulo_op, true);
+            fast_exp3(&mut A_n, &ref_matrix, params[1], params[0] as usize, modulo_op, true);
         } else if params[1] == 1 {
             // S=1: return start matrix
             A_n = ref_matrix;
@@ -169,7 +216,6 @@ pub fn main() {
             None => { algo_res = matrix },
         }
         */
-
         let final_res = mat_vec_mult(&A_n, &values, modulo_op);
         for el in final_res.iter() {
             print!("{} ", el);

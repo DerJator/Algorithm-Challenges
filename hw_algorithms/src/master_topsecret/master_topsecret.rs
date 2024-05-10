@@ -36,7 +36,7 @@ fn build_identity_mat(mat: &mut Vec<Vec<u64>>, size: usize) {
 fn mat_vec_mult(a_mat: &Vec<Vec<u64>>, v: &Vec<u64>, mod_op: u64) -> Vec<u64> {
     let mut result: Vec<u64> = vec![0;a_mat.len()];
 
-    let mut run_sum = 0;
+    let mut run_sum;
     for i in 0..a_mat.len() {
         run_sum = 0;
         for j in 0..a_mat[0].len() {
@@ -48,39 +48,6 @@ fn mat_vec_mult(a_mat: &Vec<Vec<u64>>, v: &Vec<u64>, mod_op: u64) -> Vec<u64> {
     return result;
 }
 
-fn matrix_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec<u64>>{
-    let m = A.len();
-    let n1 = A[0].len();
-    let n2 = B[0].len();
-    let mut result = vec![vec![0;n2]; m];
-
-    for i in 0..m {
-        for j in 0..n2 {
-            for k in 0..n1 {
-                result[i][j] += (A[i][k] * B[k][j]) % mod_op;
-            }
-        }
-    }
-
-    return result;
-}
-
-fn banded_multiply(band: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec<u64>> {
-    let m = band.len();
-    let n1 = band[0].len();
-    let n2 = B[0].len();
-    let mut result = vec![vec![0; n2]; m];
-
-    for i in 0..m {
-        for j in 0..n2 {
-            for k in [((i as i32-1+n1 as i32) % n1 as i32) as usize, i, (i+1+n1) % n1] {
-                result[i][j] = (result[i][j] + band[i][k] * B[k][j]) % mod_op;
-            }
-        }
-    }
-
-    return result;
-}
 
 fn circular_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec<u64>> {
     // Calculate first row explicitly, the rest is shifted because A and B are circular
@@ -151,11 +118,11 @@ pub fn main() {
     let mut values: Vec<u64>;
 
     for _ in 0..n_cases {
+        // params: N, S, L, R, X
+        //         0, 1, 2, 3, 4
         params = next_line(&mut line_iter);
         values = next_line(&mut line_iter);
 
-        // params: N, S, L, R, X
-        //         0, 1, 2, 3, 4
         let ref_matrix = build_mult_mat(params[0] as usize, params[2], params[3]);
         let mut A_n= ref_matrix.clone();
         let modulo_op = pow(10, params[4]);
@@ -171,13 +138,6 @@ pub fn main() {
             build_identity_mat(&mut A_n, params[0] as usize);
         }
 
-        /*
-        let algo_res: Vec<Vec<u64>>;
-        match A_n {
-            Some(last) => { algo_res = last },
-            None => { algo_res = matrix },
-        }
-        */
         let final_res = mat_vec_mult(&A_n, &values, modulo_op);
         for el in final_res.iter() {
             print!("{} ", el);
@@ -189,9 +149,10 @@ pub fn main() {
             None => break
         }
     }
+}
 
 
-    fn fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
+    fn _fast_exp2(A: &mut Vec<Vec<u64>>, ref_mat: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) {
         // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
         // Runtime: 3 * s * n^2
 
@@ -200,17 +161,17 @@ pub fn main() {
             return;
         }
 
-        fast_exp2(A, ref_mat, n / 2, size, thresh, !strip);
+        _fast_exp2(A, ref_mat, n / 2, size, thresh, !strip);
 
         if n % 2 == 0 {
-            *A = matrix_multiply(A, A, thresh);
+            *A = _matrix_multiply(A, A, thresh);
         } else {
-            *A = banded_multiply(ref_mat, &matrix_multiply(A, A, thresh), thresh);
+            *A = _banded_multiply(ref_mat, &_matrix_multiply(A, A, thresh), thresh);
         }
     }
 
 
-    fn fast_exp(A: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) -> Option<Vec<Vec<u64>>> {
+    fn _fast_exp(A: &Vec<Vec<u64>>, n: u64, size: usize, thresh: u64, strip: bool) -> Option<Vec<Vec<u64>>> {
         // Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than 10^thresh
         // Runtime: log(s) * n^3
 
@@ -218,19 +179,52 @@ pub fn main() {
             return None;
         }
 
-        let res = fast_exp(A, n / 2, size, thresh, !strip);
+        let res = _fast_exp(A, n / 2, size, thresh, !strip);
         let mut R: Vec<Vec<u64>>;
 
         match res {
-            Some(a_mat) => {R = matrix_multiply(&a_mat, &a_mat, thresh)},
+            Some(a_mat) => {R = _matrix_multiply(&a_mat, &a_mat, thresh)},
             None => {R = A.clone()},
         }
 
         if n % 2 == 1 && n != 1 {
-            R = matrix_multiply(&R, &A, thresh);
+            R = _matrix_multiply(&R, &A, thresh);
         }
 
         return Some(R);
     }
 
+
+fn _matrix_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec<u64>>{
+    let m = A.len();
+    let n1 = A[0].len();
+    let n2 = B[0].len();
+    let mut result = vec![vec![0;n2]; m];
+
+    for i in 0..m {
+        for j in 0..n2 {
+            for k in 0..n1 {
+                result[i][j] += (A[i][k] * B[k][j]) % mod_op;
+            }
+        }
+    }
+
+    return result;
+}
+
+fn _banded_multiply(band: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<Vec<u64>> {
+    let m = band.len();
+    let n1 = band[0].len();
+    let n2 = B[0].len();
+    let mut result = vec![vec![0; n2]; m];
+
+    for i in 0..m {
+        for j in 0..n2 {
+            for k in [((i as i32-1+n1 as i32) % n1 as i32) as usize, i, (i+1+n1) % n1] {
+                result[i][j] = (result[i][j] + band[i][k] * B[k][j]) % mod_op;
+            }
+        }
+    }
+
+    return result;
 }

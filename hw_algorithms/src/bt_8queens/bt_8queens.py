@@ -14,9 +14,9 @@ def solve(i_q, j_q, n_q=8):
     correct_jx = j_q - 1
 
     # With 1 existing pos
-    columns = [correct_jx]
-    pos_diag = [correct_ix + correct_jx]
-    neg_diag = [correct_ix - correct_jx]
+    columns = [-1 if i != correct_ix else correct_jx for i in range(n_q)]
+    pos_diag = {correct_ix + correct_jx}
+    neg_diag = {correct_ix - correct_jx}
 
     # Without 1 existing pos
     # columns = set()
@@ -28,7 +28,7 @@ def solve(i_q, j_q, n_q=8):
     def backtrack(row):
         # print(columns, pos_diag, neg_diag)
         # print(f"NEW BACKTRACK: {row=}, {columns=}, {pos_diag=}, {neg_diag=}")
-        if row == n_q:
+        if row == correct_ix:
             res.append([c + 1 for c in columns])
             print(' '.join([str(c + 1) for c in columns]))
             return
@@ -45,23 +45,23 @@ def solve(i_q, j_q, n_q=8):
                 # print(f"\t{row-col}(-) in {neg_diag}")
                 continue
 
-            columns.append(col)
-            pos_diag.append(row + col)
-            neg_diag.append(row - col)
+            columns[row] = col
+            pos_diag.add(row + col)
+            neg_diag.add(row - col)
 
             # print(f"\tr+c: {row+col}, r-c: {row-col}")
 
             # print(columns)
-            backtrack(row + 1)
+            backtrack((row + 1) % n_q)
 
-            columns.pop()
-            pos_diag.pop()
-            neg_diag.pop()
+            columns[row] = -1
+            pos_diag.remove(row + col)
+            neg_diag.remove(row - col)
 
             # print(f"BACKTRACK'S BACK ({row+1}->{row}): {columns=}, {pos_diag=}, {neg_diag=}")
 
-
-    backtrack(1)
+    backtrack((correct_ix + 1) % n_q)
+    print()
     # print(res)
 
 if __name__ == '__main__':

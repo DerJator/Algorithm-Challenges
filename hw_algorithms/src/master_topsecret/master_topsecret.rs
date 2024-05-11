@@ -40,9 +40,10 @@ fn mat_vec_mult(a_mat: &Vec<Vec<u64>>, v: &Vec<u64>, mod_op: u64) -> Vec<u64> {
     for i in 0..a_mat.len() {
         run_sum = 0;
         for j in 0..a_mat[0].len() {
-            run_sum += a_mat[i][j] * v[j];
+            run_sum += (a_mat[i][j] * v[j]) % mod_op;
+            run_sum = run_sum % mod_op;
         }
-        result[i] = run_sum % mod_op;
+        result[i] = run_sum;
     }
 
     return result;
@@ -62,6 +63,7 @@ fn circular_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec<V
     for k in 0..cols_b {
         for j in 0..cols_a {
             first_row[k] += (A[0][j] * B[j][k]) % mod_op;
+            first_row[k] = first_row[k] % mod_op;
         }
     }
 

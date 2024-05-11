@@ -29,6 +29,10 @@ def solve(i_q, j_q, n_q=8):
         # print(columns, pos_diag, neg_diag)
         # print(f"NEW BACKTRACK: {row=}, {columns=}, {pos_diag=}, {neg_diag=}")
         if row == correct_ix:
+            backtrack(row + 1)
+            return
+
+        if row == n_q:
             res.append([c + 1 for c in columns])
             print(' '.join([str(c + 1) for c in columns]))
             return
@@ -52,7 +56,7 @@ def solve(i_q, j_q, n_q=8):
             # print(f"\tr+c: {row+col}, r-c: {row-col}")
 
             # print(columns)
-            backtrack((row + 1) % n_q)
+            backtrack(row + 1)
 
             columns[row] = -1
             pos_diag.remove(row + col)
@@ -60,7 +64,7 @@ def solve(i_q, j_q, n_q=8):
 
             # print(f"BACKTRACK'S BACK ({row+1}->{row}): {columns=}, {pos_diag=}, {neg_diag=}")
 
-    backtrack((correct_ix + 1) % n_q)
+    backtrack(0)
     print()
     # print(res)
 

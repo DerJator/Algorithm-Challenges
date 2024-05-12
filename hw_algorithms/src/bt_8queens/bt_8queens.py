@@ -74,6 +74,6 @@ if __name__ == '__main__':
     for n in range(n_samples):
         queen_pos = read_input()
         if queen_pos is not None:
-            i_queen, j_queen = queen_pos
+            j_queen, i_queen = queen_pos
             solve(i_queen, j_queen, 8)
 

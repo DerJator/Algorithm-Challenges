@@ -9,43 +9,27 @@ class MedianTracker:
         heapify(self.mins)
         heapify(self.maxs)
 
-    def binary_insert(self, val: int, division: list):
-        left, right = 0, len(division) - 1
-
-        while left <= right:
-            mid = (left + right) // 2
-            if division[mid] == val:
-                division.insert(mid, val)
-                return
-            elif division[mid] < val:
-                left = mid + 1
-            elif division[mid] > val:
-                right = mid - 1
-
-        division.insert(left, val)
-
     def add_number(self, v: int,):
         """ To mins add negative value, so that maximum is easier to access """
         if len(self.mins) == 0 and len(self.maxs) == 0:
             heappush(self.mins, -v)
-        elif len(self.mins) == 0 and len(self.maxs) > 0:
-            if v >= self.maxs[0]:
+        elif len(self.maxs) > len(self.mins):
+            if v > self.maxs[0]:
                 heappush(self.maxs, v)
             else:
                 heappush(self.mins, -v)
         else:
-            if v <= -self.mins[0]:
+            if v < -self.mins[0]:
                 heappush(self.mins, -v)
             else:
                 heappush(self.maxs, v)
 
         # Balance the lists
-        if len(self.maxs) > len(self.mins):
-            x = heappop(self.maxs)
-            heappush(self.mins, -x)
-        elif len(self.mins) > len(self.maxs):
-            x = -heappop(self.mins)
-            heappush(self.maxs, x)
+        if abs(len(self.maxs) - len(self.mins)) > 1:
+            bigger = self.maxs if len(self.maxs) > len(self.mins) else self.mins
+            smaller = self.mins if len(self.maxs) > len(self.mins) else self.maxs
+            x = heappop(bigger)
+            heappush(smaller, -x)
 
         # print(f"{self.mins=}, {self.maxs=}")
 

@@ -53,7 +53,7 @@ def read_input():
     lines = []
     for l in range(100):
         try:
-            line = input().strip()
+            line = input()
         except EOFError:
             break
         if line == "" or line == "\n":

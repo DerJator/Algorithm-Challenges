@@ -1,5 +1,4 @@
-import heapq
-from heapq import *
+from collections import deque
 
 class MedianTracker:
 
@@ -8,58 +7,53 @@ class MedianTracker:
         self.maxs = []
         self.min_len = 0
         self.max_len = 0
-        heapify(self.mins)
-        heapify(self.maxs)
 
+    def binary_insert(self, val: int, division: list):
+        left, right = 0, len(division) - 1
 
-    # def binary_insert(self, val: int, division: list):
-    #     left, right = 0, len(division) - 1
-    #
-    #     while left <= right:
-    #         mid = (left + right) // 2
-    #         if division[mid] == val:
-    #             division.insert(mid, val)
-    #             return
-    #         elif division[mid] < val:
-    #             left = mid + 1
-    #         elif division[mid] > val:
-    #             right = mid - 1
-    #
-    #     division.insert(left, val)
+        while left <= right:
+            mid = (left + right) // 2
+            if division[mid] == val:
+                division.insert(mid, val)
+                return
+            elif division[mid] < val:
+                left = mid + 1
+            elif division[mid] > val:
+                right = mid - 1
+
+        division.insert(left, val)
 
     def add_number(self, v: int,):
-        """ To mins add negative value, so that maximum is easier to access """
-        if self.min_len == 0 or v < -self.mins[0]:
-            heappush(self.mins, -v)
-            self.min_len += 1
-        else:
-            heappush(self.maxs, v)
-            self.max_len += 1
+        if len(self.mins) == 0 and len(self.maxs) == 0:
+            self.mins.append(v)
+        elif len(self.maxs) > 0:
+            if v > self.maxs[0]:
+                self.binary_insert(v, self.maxs)
+            else:
+                self.binary_insert(v, self.mins)
+        elif len(self.mins) > 0:
+            if v <= self.mins[len(self.mins) - 1]:
+                self.binary_insert(v, self.mins)
+            else:
+                self.binary_insert(v, self.maxs)
 
-        self.balance()
-
-    def balance(self):
         # Balance the lists
-        if self.max_len > self.min_len:
-            x = heappop(self.maxs)
-            self.max_len -= 1
-            heappush(self.mins, -x)
-            self.min_len += 1
-        elif self.min_len > self.max_len:
-            x = -heappop(self.mins)
-            self.min_len -= 1
-            heappush(self.maxs, x)
-            self.max_len += 1
+        if len(self.maxs) > len(self.mins):
+            x = self.maxs.pop(0)
+            self.mins.append(x)
+        elif len(self.mins) > len(self.maxs):
+            x = self.mins.pop()
+            self.maxs.insert(0, x)
 
         # print(f"{self.mins=}, {self.maxs=}")
 
     def get_median(self):
-        if self.min_len > self.max_len:
-            return -self.mins[0]
-        elif self.max_len > self.min_len:
+        if len(self.mins) > len(self.maxs):
+            return self.mins[len(self.mins) - 1]
+        elif len(self.maxs) > len(self.mins):
             return self.maxs[0]
         else:
-            return -self.mins[0], self.maxs[0]
+            return self.mins[len(self.mins) - 1], self.maxs[0]
 
 if __name__ == '__main__':
     n_cmds = int(input())
@@ -67,7 +61,7 @@ if __name__ == '__main__':
 
     for n in range(n_cmds):
         line = input().strip().split(' ')
-        # print(f"{line=}")
+        # print(f'{line=}')
         if len(line) == 2:
             tracker.add_number(int(line[1]))
         elif len(line) == 1:

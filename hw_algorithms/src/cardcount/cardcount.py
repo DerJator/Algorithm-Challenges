@@ -1,11 +1,15 @@
-
 if __name__ == '__main__':
-    value_range = [x for x in range(2, 10)] + ['T', 'J', 'Q', 'K', 'A']
-    value_ics = {2: 0, 3: 1, ..., 'A': ...}
+    value_range = [str(x) for x in range(2, 10)] + ['T', 'J', 'Q', 'K', 'A']
+    value_range = value_range[::-1]
+    suit_range = ['S', 'H', 'C', 'D']
 
     for t in range(int(input())):
-        card_deck = {'C': value_range.copy(), 'D': value_range.copy(), 'H': value_range.copy(), 'S': value_range.copy()}
+        card_deck = {key: suit_range.copy() for key in value_range}
         n = int(input())
         for i in range(n):
             val, suit = input().split(' ')
-            card_deck[suit][val] = i
+            card_deck[val].remove(suit)
+        for v, suits in card_deck.items():
+            if len(suits) > 0:
+                print(v, suits[0])
+                break

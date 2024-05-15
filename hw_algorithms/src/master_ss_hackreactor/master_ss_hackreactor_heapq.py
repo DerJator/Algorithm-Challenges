@@ -6,37 +6,13 @@ class MedianTracker:
     def __init__(self):
         self.mins = []
         self.maxs = []
+        self.in_stream = []
         self.min_len = 0
         self.max_len = 0
-        heapify(self.mins)
-        heapify(self.maxs)
-
-
-    # def binary_insert(self, val: int, division: list):
-    #     left, right = 0, len(division) - 1
-    #
-    #     while left <= right:
-    #         mid = (left + right) // 2
-    #         if division[mid] == val:
-    #             division.insert(mid, val)
-    #             return
-    #         elif division[mid] < val:
-    #             left = mid + 1
-    #         elif division[mid] > val:
-    #             right = mid - 1
-    #
-    #     division.insert(left, val)
 
     def add_number(self, v: int,):
         """ To mins add negative value, so that maximum is easier to access """
-        if self.min_len == 0 or v < -self.mins[0]:
-            heappush(self.mins, -v)
-            self.min_len += 1
-        else:
-            heappush(self.maxs, v)
-            self.max_len += 1
-
-        self.balance()
+        heappush(self.in_stream, v)
 
     def balance(self):
         # Balance the lists
@@ -54,12 +30,30 @@ class MedianTracker:
         # print(f"{self.mins=}, {self.maxs=}")
 
     def get_median(self):
-        if self.min_len > self.max_len:
+        print(self.mins, self.maxs)
+        if len(self.mins) > len(self.maxs):
             return -self.mins[0]
-        elif self.max_len > self.min_len:
+        elif len(self.maxs) > len(self.mins):
             return self.maxs[0]
         else:
             return -self.mins[0], self.maxs[0]
+
+    def integrate_stream(self):
+        """ The lower half of the stream is put into mins, the bigger half is put into maxs """
+        if len(self.mins) < len(self.maxs):
+            n_lower = len(self.in_stream) // 2 + 1  # put 1 element more in the mins to compensate
+        else:
+            n_lower = len(self.in_stream) // 2
+
+        for i in range(n_lower):
+            v = heappop(self.in_stream)  # get the next smallest element to put it in mins
+            heappush(self.mins, -v)
+
+        for i in range(len(self.in_stream)):
+            v = heappop(self.in_stream)  # get the next smallest elements of the higher half
+            heappush(self.maxs, v)
+
+
 
 if __name__ == '__main__':
     n_cmds = int(input())
@@ -68,9 +62,10 @@ if __name__ == '__main__':
     for n in range(n_cmds):
         line = input().strip().split(' ')
         # print(f"{line=}")
-        if len(line) == 2:
+        if len(line) == 2: # R num
             tracker.add_number(int(line[1]))
-        elif len(line) == 1:
+        elif len(line) == 1: # W
+            tracker.integrate_stream()
             median = tracker.get_median()
             if type(median) == int:
                 print(median)
@@ -78,4 +73,8 @@ if __name__ == '__main__':
                 print(*median)
         else:
             print("This shouldn't happen!")
+
+        print(tracker.in_stream)
+        print("mins", tracker.mins)
+        print("maxs", tracker.maxs)
 

@@ -51,7 +51,7 @@ def read_input():
 
     """ Read in all lines """
     lines = []
-    for l in range(100):
+    while True:
         try:
             line = input()
         except EOFError:
@@ -120,7 +120,9 @@ if __name__ == '__main__':
             break
 
         if ref_match_found == -1:
-            print("No solution.\n")
+            print("No solution.")
+            if testcase + 1 < n_cases:
+                print("")
             continue
 
         # Build mapping
@@ -131,5 +133,6 @@ if __name__ == '__main__':
             decryption = apply_mapping(line, mapping)
             print(decryption)
 
-        print("")
+        if testcase + 1 != n_cases:
+            print("")
 

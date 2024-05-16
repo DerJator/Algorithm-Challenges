@@ -1,0 +1,18 @@
+2
+4 4
+A=>B
+B=>A
+C=>D
+D=>C
+A<=>B
+BB<=>CB
+CDC<=>CBC
+
+4 4
+A=>B
+B=>C
+C=>D
+D=>B
+A<=>B
+C<=>B
+

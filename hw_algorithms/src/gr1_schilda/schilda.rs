@@ -63,11 +63,13 @@ pub fn main(){
     let mut map_size: Vec<usize>;
     let mut street_map: Vec<Vec<bool>>;
 
+    // Read in n_cases, initialize read-in buffer
     let mut n_cases_str = String::new();
     let _ = stdin.read_line(&mut n_cases_str);
     let n_cases = n_cases_str.trim().parse::<usize>().unwrap();
     let mut line_val = String::new();
 
+    // Create reader so that it can be passe to read map (reads unknown no. of lines)
     let mut reader = stdin.lock();
 
     for _ in 0..n_cases {

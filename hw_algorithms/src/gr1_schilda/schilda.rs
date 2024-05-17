@@ -1,7 +1,7 @@
 use std::io;
 use std::io::{BufRead, StdinLock};
 use num_traits::pow;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 
 fn read_ints(line_val: &str) -> Vec<usize> {
@@ -41,11 +41,43 @@ fn letter_to_int(l: &str, mapping: &HashMap<char, i32>) -> usize {
     return index;
 }
 
+fn find_indices(v: &[bool], visited: &HashSet<usize>) -> Option<Vec<usize>> {
+    let result: Vec<usize> = v.iter()
+     .enumerate()
+     .filter_map(|(index, &value)| if value && !visited.contains(&index) { Some(index) } else { None })
+     .collect();
+
+    if result.len() > 0{
+        return Some(result);
+    } else {
+        return None;
+    }
+}
+
 fn exists_path(p0: usize, p1: usize, streets: &Vec<Vec<bool>>) -> bool {
-    println!("{}, {}\n{:?}", p0, p1, streets);
 
-    todo!("Implement BFS");
+    // Breadth-first search
+    let mut itinerary: Vec<usize> = vec![p0];
+    let mut visited: HashSet<usize> = HashSet::new();
+    visited.insert(p0);
 
+    while itinerary.len() > 0 {
+        // println!("Itinerary: {:?}", itinerary);
+        let mut extension = Vec::<usize>::new();
+        for node in itinerary.iter(){
+            visited.insert(*node);
+            match find_indices(&streets[*node], &visited) {
+                Some(indices) => {extension.extend(indices)}
+                None => {}
+            }
+            // println!("Extension{:?}", extension);
+        }
+        itinerary = extension;
+        if visited.contains(&p1){
+            return true;
+        }
+    }
+    return false;
 }
 
 pub fn main(){

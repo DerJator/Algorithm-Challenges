@@ -5,8 +5,7 @@ B=>A
 C=>D
 D=>C
 A<=>B
-BB<=>CB
-CDC<=>CBC
+A<=>C
 
 4 4
 A=>B

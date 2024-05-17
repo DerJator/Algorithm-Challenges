@@ -34,21 +34,23 @@ fn _exists_path_bfs(p0: usize, p1: usize, streets: &Vec<Vec<bool>>) -> bool {
 
 
 // Pure DFS too slow
-fn exists_path_dfs(p0: usize, p1: usize, streets: &Vec<Vec<bool>>) -> bool {
+fn exists_path_dfs(p0: usize, p1: usize, streets: &mut Vec<Vec<bool>>) -> bool {
     let mut visited = HashSet::new();
     // visited.insert(p0);
 
     return dfs(&mut visited, streets, p0, p1);
 }
 
-fn dfs(visited: &mut HashSet<usize>, streets: &Vec<Vec<bool>>, this: usize, goal: usize) -> bool {
+fn dfs(visited: &mut HashSet<usize>, streets: &mut Vec<Vec<bool>>, this: usize, goal: usize) -> bool {
     // println!("In {}: visited: {:?}", this, visited);
+    add_paths(visited, this, streets);
 
     // Get neighbors and check if termination (pos or neg) is reached => No continuation
     let neighbors = get_neighbours(&streets[this], visited);
     // println!("Neighb: {:?}", neighbors);
     if neighbors.contains(&goal) {
         // println!("Goal is a neighbor!");
+        add_paths(visited, goal, streets);
         return true;
     } else if neighbors.len() == 0 || visited.contains(&this) {
         // println!("No neighbors or we were already here.");
@@ -115,7 +117,7 @@ pub fn main(){
 
             // Check if there exist ways in both directions
             for dir in 0..=1 {
-                if !exists_path_dfs(friends[dir], friends[1-dir], &street_map) {
+                if !exists_path_dfs(friends[dir], friends[1-dir], &mut street_map) {
                     println!("Footwalking");
                     continue 'tests;
                 }
@@ -127,6 +129,13 @@ pub fn main(){
 
 }
 // Helper functions here
+
+fn add_paths(froms: &HashSet<usize>, to: usize, streets: &mut Vec<Vec<bool>>) {
+    for past_node in froms {
+        // println!("Add path {}=>{}", past_node, to);
+        streets[*past_node][to] = true;
+    }
+}
 
 fn read_ints(line_val: &str) -> Vec<usize> {
     let dims: Vec<usize> = line_val.trim()

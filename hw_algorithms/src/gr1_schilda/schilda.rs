@@ -1,6 +1,5 @@
 use std::io;
 use std::io::{BufRead, StdinLock};
-use num_traits::pow;
 use std::collections::{HashMap, HashSet};
 
 
@@ -14,7 +13,7 @@ fn read_ints(line_val: &str) -> Vec<usize> {
     return dims;
 }
 
-fn read_map(reader: &mut StdinLock, dims: Vec<usize>, mapping: &HashMap<char, i32>) -> Vec<Vec<bool>> {
+fn read_map(reader: &mut StdinLock, dims: Vec<usize>, mapping: &HashMap<char, usize>) -> Vec<Vec<bool>> {
     // dims[0]: n junctions, dims[1]: n roads
     let mut map = vec![vec![false; dims[0]]; dims[0]];
     let mut junctions: Vec<usize>;
@@ -30,7 +29,7 @@ fn read_map(reader: &mut StdinLock, dims: Vec<usize>, mapping: &HashMap<char, i3
     return map;
 }
 
-fn letter_to_int(l: &str, mapping: &HashMap<char, i32>) -> usize {
+fn letter_to_int(l: &str, mapping: &HashMap<char, usize>) -> usize {
     let len = l.chars().count();
     let mut index: usize = 0;
 
@@ -54,7 +53,7 @@ fn find_indices(v: &[bool], visited: &HashSet<usize>) -> Option<Vec<usize>> {
     }
 }
 
-fn exists_path(p0: usize, p1: usize, streets: &Vec<Vec<bool>>) -> bool {
+fn exists_path_bfs(p0: usize, p1: usize, streets: &Vec<Vec<bool>>) -> bool {
 
     // Breadth-first search
     let mut itinerary: Vec<usize> = vec![p0];
@@ -86,9 +85,9 @@ pub fn main(){
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
     ];
-    let mut letter_mapping: HashMap<char, i32> = HashMap::new();
+    let mut letter_mapping: HashMap<char, usize> = HashMap::new();
     for (val, letter) in letters.iter().enumerate(){
-        letter_mapping.insert(*letter, val as i32);
+        letter_mapping.insert(*letter, val);
     }
 
     let stdin = io::stdin();
@@ -127,7 +126,7 @@ pub fn main(){
 
             // Check if there exist ways in both directions
             for dir in 0..=1 {
-                if !exists_path(friends[dir], friends[1-dir], &street_map) {
+                if !exists_path_bfs(friends[dir], friends[1-dir], &street_map) {
                     println!("Footwalking");
                     continue 'tests;
                 }
@@ -138,3 +137,16 @@ pub fn main(){
     }
 
 }
+
+fn pow(base: usize, exp: usize) -> usize {
+    if exp == 0 {
+        return 1;
+    }
+    let res = pow(base, exp/2);
+    if exp % 2 == 0 {
+        return res * res;
+    } else {
+        return base * res * res;
+    }
+}
+

@@ -3,57 +3,11 @@ use std::io::{BufRead, StdinLock};
 use std::collections::{HashMap, HashSet};
 
 
-fn read_ints(line_val: &str) -> Vec<usize> {
-    let dims: Vec<usize> = line_val.trim()
-                .split_whitespace()
-                .map(|v| v.parse::<usize>())
-                .filter_map(Result::ok)
-                .collect();
-    // println!("{:?}", dims);
-    return dims;
-}
-
-fn read_map(reader: &mut StdinLock, dims: Vec<usize>, mapping: &HashMap<char, usize>) -> Vec<Vec<bool>> {
-    // dims[0]: n junctions, dims[1]: n roads
-    let mut map = vec![vec![false; dims[0]]; dims[0]];
-    let mut junctions: Vec<usize>;
-
-    for _ in 0..dims[1]{
-        let mut string = String::new();
-        let _ = reader.read_line(&mut string);
-        junctions = string.trim().split("=>")
-            .map(|s| letter_to_int(s, mapping))
-            .collect::<Vec<usize>>();
-        map[junctions[0]][junctions[1]] = true;
-    }
-    return map;
-}
-
-fn letter_to_int(l: &str, mapping: &HashMap<char, usize>) -> usize {
-    let len = l.chars().count();
-    let mut index: usize = 0;
-
-    for (i, c) in l.chars().enumerate() {
-        index = index + (pow(26, len - 1 - i) * mapping.get(&c).unwrap()) as usize;
-    }
-
-    return index;
-}
-
-fn find_indices(v: &[bool], visited: &HashSet<usize>) -> Option<Vec<usize>> {
-    let result: Vec<usize> = v.iter()
-     .enumerate()
-     .filter_map(|(index, &value)| if value && !visited.contains(&index) { Some(index) } else { None })
-     .collect();
-
-    if result.len() > 0{
-        return Some(result);
-    } else {
-        return None;
-    }
-}
-
-fn exists_path_bfs(p0: usize, p1: usize, streets: &Vec<Vec<bool>>) -> bool {
+// Pure BFS too slow
+fn _exists_path_bfs(p0: usize, p1: usize, streets: &Vec<Vec<bool>>) -> bool {
+    // Search if there is an existing path from p0 to p1 using the streets
+    // # Arguments
+    // p0, p1
 
     // Breadth-first search
     let mut itinerary: Vec<usize> = vec![p0];
@@ -63,19 +17,54 @@ fn exists_path_bfs(p0: usize, p1: usize, streets: &Vec<Vec<bool>>) -> bool {
     while itinerary.len() > 0 {
         // println!("Itinerary: {:?}", itinerary);
         let mut extension = Vec::<usize>::new();
+        let mut neighbs: Vec<usize>;
         for node in itinerary.iter(){
             visited.insert(*node);
-            match find_indices(&streets[*node], &visited) {
-                Some(indices) => {extension.extend(indices)}
-                None => {}
-            }
-            // println!("Extension{:?}", extension);
+            neighbs =  get_neighbours(&streets[*node], &visited);
+            extension.extend(neighbs);
+            //println!("Extension{:?}", extension);
         }
         itinerary = extension;
         if visited.contains(&p1){
             return true;
         }
     }
+    return false;
+}
+
+
+// Pure DFS too slow
+fn exists_path_dfs(p0: usize, p1: usize, streets: &Vec<Vec<bool>>) -> bool {
+    let mut visited = HashSet::new();
+    // visited.insert(p0);
+
+    return dfs(&mut visited, streets, p0, p1);
+}
+
+fn dfs(visited: &mut HashSet<usize>, streets: &Vec<Vec<bool>>, this: usize, goal: usize) -> bool {
+    // println!("In {}: visited: {:?}", this, visited);
+
+    // Get neighbors and check if termination (pos or neg) is reached => No continuation
+    let neighbors = get_neighbours(&streets[this], visited);
+    // println!("Neighb: {:?}", neighbors);
+    if neighbors.contains(&goal) {
+        // println!("Goal is a neighbor!");
+        return true;
+    } else if neighbors.len() == 0 || visited.contains(&this) {
+        // println!("No neighbors or we were already here.");
+        return false;
+    }
+
+    // No termination, add this to visited and continue search
+    visited.insert(this);
+    // println!("Visit neighbs: {:?}", neighbors);
+    for n in neighbors.iter() {
+        if dfs(visited, streets, *n, goal) {
+            return true;
+        }
+    }
+    // println!("No path found, remove this from visited");
+    visited.remove(&this);
     return false;
 }
 
@@ -126,7 +115,7 @@ pub fn main(){
 
             // Check if there exist ways in both directions
             for dir in 0..=1 {
-                if !exists_path_bfs(friends[dir], friends[1-dir], &street_map) {
+                if !exists_path_dfs(friends[dir], friends[1-dir], &street_map) {
                     println!("Footwalking");
                     continue 'tests;
                 }
@@ -137,6 +126,55 @@ pub fn main(){
     }
 
 }
+// Helper functions here
+
+fn read_ints(line_val: &str) -> Vec<usize> {
+    let dims: Vec<usize> = line_val.trim()
+                .split_whitespace()
+                .map(|v| v.parse::<usize>())
+                .filter_map(Result::ok)
+                .collect();
+    // println!("{:?}", dims);
+    return dims;
+}
+
+fn read_map(reader: &mut StdinLock, dims: Vec<usize>, mapping: &HashMap<char, usize>) -> Vec<Vec<bool>> {
+    // dims[0]: n junctions, dims[1]: n roads
+    let mut map = vec![vec![false; dims[0]]; dims[0]];
+    let mut junctions: Vec<usize>;
+
+    for _ in 0..dims[1]{
+        let mut string = String::new();
+        let _ = reader.read_line(&mut string);
+        junctions = string.trim().split("=>")
+            .map(|s| letter_to_int(s, mapping))
+            .collect::<Vec<usize>>();
+        map[junctions[0]][junctions[1]] = true;
+    }
+    return map;
+}
+
+fn letter_to_int(l: &str, mapping: &HashMap<char, usize>) -> usize {
+    let len = l.chars().count();
+    let mut index: usize = 0;
+
+    for (i, c) in l.chars().enumerate() {
+        index = index + (pow(26, len - 1 - i) * mapping.get(&c).unwrap()) as usize;
+    }
+
+    return index;
+}
+
+fn get_neighbours(adjacency_row: &[bool], visited: &HashSet<usize>) -> Vec<usize> {
+    let result: Vec<usize> = adjacency_row.iter()
+     .enumerate()
+     .filter_map(|(index, &value)| if value && !visited.contains(&index) { Some(index) } else { None })
+     .collect();
+
+    // println!("result {:?}", result);
+    return result;
+}
+
 
 fn pow(base: usize, exp: usize) -> usize {
     if exp == 0 {

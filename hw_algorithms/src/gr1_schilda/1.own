@@ -1,0 +1,19 @@
+1
+6 9
+A=>C
+A=>D
+B=>E
+C=>F
+D=>B
+E=>A
+E=>D
+F=>D
+F=>E
+A<=>B
+A<=>D
+A<=>F
+B<=>D
+C<=>A
+C<=>F
+E<=>B
+A<=>E

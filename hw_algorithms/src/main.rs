@@ -6,6 +6,7 @@
 // OPEN
 // mod gr1_schilda;
 mod fibonacci;
+mod helpers;
 
 
 fn main() {

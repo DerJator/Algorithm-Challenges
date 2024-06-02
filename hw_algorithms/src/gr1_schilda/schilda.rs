@@ -36,6 +36,7 @@ fn _exists_path_bfs(p0: usize, p1: usize, streets: &Vec<Vec<i8>>) -> bool {
 // Pure DFS too slow
 fn exists_path_dfs(start: usize, goal: usize, streets: &mut Vec<Vec<i8>>) -> bool {
     // Check for known shortcut (if path is known or known not to exist)
+    // println!("Check from {} to {}", start, goal);
     if streets[start][goal] == 1 {
         return true;
     } else if streets[start][goal] == -1 {
@@ -66,20 +67,20 @@ fn exists_path_dfs(start: usize, goal: usize, streets: &mut Vec<Vec<i8>>) -> boo
 
 fn dfs(visited: &mut HashSet<usize>, streets: &mut Vec<Vec<i8>>, this: usize, goal: usize) -> bool {
     // println!("In {}: visited: {:?}", this, visited);
-    add_paths(visited, this, streets);
+    // add_paths(visited, this, streets);
 
     // Get neighbors and check if termination (pos or neg) is reached => No continuation
     let neighbors = get_neighbours(&streets[this], visited);
 
-    if streets[this][goal] == -1 {
+    if streets[this][goal] == -1 || neighbors.len() == 0 || visited.contains(&this){
+        // println!("In {}: Can't go further!", this);
+        add_paths(visited, this, streets);
         return false;
     } else if neighbors.contains(&goal) {
-        // println!("Goal is a neighbor!");
+        // println!("In {}: Goal is a neighbor!", this);
+        visited.insert(this);
         add_paths(visited, goal, streets);
         return true;
-    } else if neighbors.len() == 0 || visited.contains(&this) {
-        // println!("No neighbors or we were already here.");
-        return false;
     }
 
     // No termination, add this to visited and continue search
@@ -145,7 +146,7 @@ pub fn main(){
             println!("Car is OK")
         }
         line_val.clear();
-        print_array(&street_map, "Final Street Map");
+        // print_array(&street_map, "Final Street Map");
     }
 
 }
@@ -153,14 +154,14 @@ pub fn main(){
 
 fn add_paths(froms: &HashSet<usize>, to: usize, streets: &mut Vec<Vec<i8>>) {
     for past_node in froms {
-        println!("Add path {}=>{}", past_node, to);
+        // println!("Add path {}=>{}", past_node, to);
         streets[*past_node][to] = 1;
     }
 }
 
 fn no_paths(froms: &HashSet<usize>, to: usize, streets: &mut Vec<Vec<i8>>) {
     for past_node in froms {
-        println!("No path {}=>{}", past_node, to);
+        // println!("No path {}=>{}", past_node, to);
         streets[*past_node][to] = -1;
     }
 }

@@ -65,7 +65,6 @@ pub fn matrix_multiply(A: &Vec<Vec<u64>>, B: &Vec<Vec<u64>>, mod_op: u64) -> Vec
 
 /// Recursively multiply squared matrix A until exponent n is reached. Keep numbers lower than thresh
 /// Runtime: log(n) * m^3
-/// NOT YET TESTED IN UNIVERSAL FORM
 pub fn fast_exp(new_val: &mut Vec<Vec<u64>>, base_mat: &Vec<Vec<u64>>, n: u64, modulo_op: u64) {
 
     // println!("n: {}", n);

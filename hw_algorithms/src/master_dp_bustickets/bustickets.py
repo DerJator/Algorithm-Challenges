@@ -4,14 +4,22 @@ import math
 def min_bus_cost(bus_costs):
     n_cities = len(bus_costs)
     shortest_paths = [[math.inf] * n_cities for _ in range(n_cities)]
-    print(shortest_paths)
 
     for dest in range(1, n_cities):  # we don't need to get to 0
-        for m in range(1, n_cities):
-            # logic
-        shortest_paths[]
+        path_options = [bus_costs[0][dest]]  # Find the shortest path
+        # print(f"1->{dest+1}")
+        for m in range(1, dest):
+            # print(f"1->{m+1} + {m+1}->{dest+1}")
+            path_options.append(bus_costs[0][m] + bus_costs[m][dest])
 
+        shortest_paths[0][dest] = min(path_options)
 
+    result = shortest_paths[0][n_cities - 1]
+    if result == math.inf:
+        print("IMPOSSIBLE")
+    else:
+        print(result)
+        # print(f"Add 1->{dest+1}: {shortest_paths[0][dest]}")
 
 if __name__ == '__main__':
     n_cases = int(input())
@@ -32,6 +40,6 @@ if __name__ == '__main__':
                     bus_costs[i][j + i + 1] = min_cost
 
                 # print(f"{min_cost=} (min('', {bus_lines_from_i[j]}))")
-        print(f"{bus_costs=}")
+        # print(f"{bus_costs=}")
         res = min_bus_cost(bus_costs)
 
